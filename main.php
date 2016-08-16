@@ -54,7 +54,7 @@ function skipCache() {
 }
 
 session_start();
-//print_r($_SESSION);
+
 if (
 	$cacheEnabled 
 	&& empty($_COOKIE['bypassStaticCache'])
