@@ -53,6 +53,8 @@ function skipCache() {
 	require_once('../framework/main.php');
 }
 
+session_start();
+//print_r($_SESSION);
 if (
 	$cacheEnabled 
 	&& empty($_COOKIE['bypassStaticCache'])
@@ -62,6 +64,8 @@ if (
 	// Request is not POST (which would have to be handled dynamically)
 	&& count($_POST) == 0
 	&& count($_GET) <= 1
+    // Only cache for logged in users
+    && (isset($_SESSION['loggedInAs']) && $_SESSION['loggedInAs'] > 0)
 ) {
 	// Define system paths (copied from Core.php)
 	if(!defined('BASE_PATH')) {
@@ -135,14 +139,14 @@ if (
 		header('Cache-Control: public');
 		header('X-SilverStripe-Cache: hit at '.@date('r'));
 
-		if (($ifModifiedSince && @strtotime($ifModifiedSince)==$lastModified) || $etagHeader == $etagFile) {
+		if ((($ifModifiedSince && @strtotime($ifModifiedSince)==$lastModified) || $etagHeader == $etagFile) && !$cacheDebug) {
 		       header("HTTP/1.1 304 Not Modified");
 		       exit;
 		}
 		
 		echo file_get_contents($filepath);
 		if ($cacheDebug) {
-			echo "<h1>File was cached</h1>";
+			echo "<h1>File was cached</h1> ".$filepath;
 		}
 
 	} elseif (file_exists($cacheBaseDir . $cacheDir . $file . '.php')) {
